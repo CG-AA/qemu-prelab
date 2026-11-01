@@ -44,6 +44,9 @@ ls bin
 | `-aarch64` | 64-bit ARM | the board, ARM laptops such as Apple Silicon Macs |
 | `-armhf`   | 32-bit ARM | no laptop                                         |
 
+What each program does, and the other names these CPUs go by: see
+[What's in bin/](#whats-in-bin) near the end.
+
 ## Part A: run the wrong binary
 
 ### Step 2: which machine are you on?
@@ -151,6 +154,43 @@ docker run --rm -v "${PWD}:/work" --platform linux/arm/v7 arm32v7/debian:bookwor
 If you are still in the container, type `exit`. Keep `bin/speed-aarch64`. It carries
 its own C library, so it runs on the board as it is. Write down what you think the
 board's three lines will be, and check on the first day with the board.
+
+## What's in bin/
+
+Every file in `bin/` is named `<program>-<cpu>`. For example, `bin/speed-armhf` is
+the program `speed` (its source is `part-b/speed.c`), built for the `armhf` CPU.
+
+### The CPU names
+
+The same CPU goes by different names in different tools. These are the ones you'll
+meet in this exercise:
+
+| Suffix here | CPU                                     | `uname -m` says                                | Docker calls it | Debian calls it |
+|-------------|-----------------------------------------|------------------------------------------------|-----------------|-----------------|
+| `x86_64`    | 64-bit x86 (Intel, AMD)                 | `x86_64`                                       | `linux/amd64`   | `amd64`         |
+| `aarch64`   | 64-bit ARM (the board, Apple Silicon)   | `aarch64` (`arm64` in a Mac's own terminal)    | `linux/arm64`   | `arm64`         |
+| `armhf`     | 32-bit ARM                              | `armv7l`                                       | `linux/arm/v7`  | `armhf`         |
+
+`armhf` means ARM "hard-float": a 32-bit ARM CPU that does floating-point math in
+hardware. Every program carries its own copy of the C library (it is *static*), so it
+runs on any Linux with the right CPU. The one exception is `whereami-dynamic-armhf`.
+
+### The programs
+
+| Program            | Part             | What it does                                                                                                   |
+|--------------------|------------------|----------------------------------------------------------------------------------------------------------------|
+| `whereami`         | A, required      | Prints what it was built for and what the machine says about itself: CPU name, pointer and `long` size, whether `char` is signed. |
+| `whereami-dynamic` | A, optional      | `whereami` without its own C library: it uses the one installed in the system. armhf only.                     |
+| `traps`            | A, optional      | Prints four values from the same source code that may differ between CPUs.                                     |
+| `speed`            | B, required      | Filters fake sensor readings with integer math, then with float math, then sleeps for 1 second, timing each part. |
+| `primes`           | B, optional      | Counts the prime numbers below 2,000,000 (a prime is a whole number above 1 that only 1 and itself divide evenly) by trying every divisor, so it is mostly integer division. |
+| `floats`           | B, optional      | Multiplies two 600×600 matrices of floats, the kind of work NumPy and OpenCV do.                               |
+| `syscalls`         | B, optional      | Asks the kernel to write one byte, a million times.                                                            |
+| `memory`           | B, optional      | Copies a 64 MB block of memory 40 times.                                                                       |
+
+Outside `bin/`: `part-b/speed.py` is the integer part of `speed` in Python, and
+`tools/bench.sh` runs every Part B program on all three CPUs and prints how many times
+slower each one is.
 
 ## If something goes wrong
 
