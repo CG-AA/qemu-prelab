@@ -1,0 +1,4 @@
+# Keep Unix line endings on Windows checkouts, or the scripts won't run in the container.
+* text=auto eol=lf
+# The prebuilt programs are binaries: never touch their bytes.
+bin/* binary
